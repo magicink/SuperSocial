@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "646656174339",
+    "firebase_url": "https://supersocial-96c6e.firebaseio.com",
+    "project_id": "supersocial-96c6e",
+    "storage_bucket": "supersocial-96c6e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:646656174339:android:9b4d184f11e94df92ea136",
+        "android_client_info": {
+          "package_name": "com.brandontom.supersocial"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "646656174339-0gimg6kuqr926u4k2sr7enr3894kpool.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.brandontom.supersocial",
+            "certificate_hash": "c93b6e9c03416b178ee29a17783689a883ac5048"
+          }
+        },
+        {
+          "client_id": "646656174339-t9ab5l2mukacpvd87pnqiorj402ub4sg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWhQVrhyLbon88szZsYuWA9y2QAWQqQhY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "646656174339-t9ab5l2mukacpvd87pnqiorj402ub4sg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
