@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:SuperSocial/pages/home.dart';
+import 'package:SuperSocial/widgets/progress.dart';
+import 'package:SuperSocial/models/user.dart';
 
 class Search extends StatefulWidget {
   @override
@@ -7,10 +11,27 @@ class Search extends StatefulWidget {
 }
 
 class _SearchState extends State<Search> {
+  TextEditingController textEditingController = TextEditingController();
+  Future<QuerySnapshot> searchResultsFuture;
+
+  handleSearch(query) {
+    Future<QuerySnapshot> result = usersRef
+        .where('username', isGreaterThanOrEqualTo: query)
+        .getDocuments();
+    setState(() {
+      searchResultsFuture = result;
+    });
+  }
+
+  handleClear () {
+    textEditingController.clear();
+  }
+
   AppBar buildSearchField () {
     return AppBar(
       backgroundColor: Theme.of(context).primaryColor,
       title: TextFormField(
+        controller: textEditingController,
         decoration: InputDecoration(
           fillColor: Colors.white,
           hintText: "Search for a user",
@@ -24,12 +45,14 @@ class _SearchState extends State<Search> {
               Icons.clear,
               size: 25.0,
             ),
-            onPressed: () => print('Cleared'),
+            onPressed: handleClear,
           ),
         ),
+        onFieldSubmitted: handleSearch,
       ),
     );
   }
+
   Container buildEmptySearchResults(context) {
     return Container(
       color: Theme.of(context).primaryColor,
@@ -49,11 +72,32 @@ class _SearchState extends State<Search> {
     );
   }
 
+  FutureBuilder buildSearchResults(context) {
+    return FutureBuilder(
+      future: searchResultsFuture,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return circularProgress(context);
+        }
+        List<Text> searchResults = [];
+        snapshot.data.documents.forEach((document) {
+          User user = User.fromDocument(document);
+          searchResults.add(Text(user.username));
+        });
+        return ListView(
+          children: searchResults,
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: buildSearchField(),
-      body: buildEmptySearchResults(context),
+      body: searchResultsFuture != null
+          ? buildSearchResults(context)
+          : buildEmptySearchResults(context),
     );
   }
 }
