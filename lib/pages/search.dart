@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -79,12 +80,14 @@ class _SearchState extends State<Search> {
         if (!snapshot.hasData) {
           return circularProgress(context);
         }
-        List<Text> searchResults = [];
+        List<UserResult> searchResults = [];
         snapshot.data.documents.forEach((document) {
           User user = User.fromDocument(document);
-          searchResults.add(Text(user.username));
+          UserResult userResult = UserResult(user);
+          searchResults.add(userResult);
         });
         return ListView(
+          padding: EdgeInsets.all(5.0),
           children: searchResults,
         );
       },
@@ -94,6 +97,7 @@ class _SearchState extends State<Search> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).primaryColor,
       appBar: buildSearchField(),
       body: searchResultsFuture != null
           ? buildSearchResults(context)
@@ -103,8 +107,41 @@ class _SearchState extends State<Search> {
 }
 
 class UserResult extends StatelessWidget {
+  final User user;
+
+  UserResult(this.user);
+
   @override
   Widget build(BuildContext context) {
-    return Text("User Result");
+    return Container(
+      color: Theme.of(context).primaryColorDark,
+      child: Column(
+        children: <Widget>[
+          GestureDetector(
+            onTap: () => print('tapped'),
+            child: ListTile(
+              contentPadding: EdgeInsets.all(5.0),
+              leading: CircleAvatar(
+                backgroundImage: CachedNetworkImageProvider(user.photoUrl),
+              ),
+              title: Text(
+                user.displayName,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold
+                ),
+              ),
+              subtitle: Text(
+                user.username,
+                style: TextStyle(
+                  color: Colors.white
+                ),
+              ),
+            ),
+          ),
+          Divider(height: 2.0, color: Theme.of(context).accentColor,)
+        ],
+      ),
+    );
   }
 }
