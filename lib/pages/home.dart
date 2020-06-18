@@ -5,6 +5,7 @@ import 'package:SuperSocial/pages/search.dart';
 import 'package:SuperSocial/pages/upload.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -13,7 +14,9 @@ import 'package:SuperSocial/models/user.dart';
 final GoogleSignIn googleSignIn = GoogleSignIn();
 final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
 final CollectionReference usersRef = Firestore.instance.collection('users');
+final CollectionReference userPostsRef = Firestore.instance.collection('userPosts');
 final dateTimeUtc = DateTime.now().toUtc();
+final StorageReference storageReference = FirebaseStorage.instance.ref();
 
 User currentUser;
 
@@ -64,13 +67,13 @@ class _HomeState extends State<Home> {
           'username': username
         });
         userDocument = await usersRef.document(firebaseUser.uid).get();
-        currentUser = User.fromDocument(userDocument);
       } else {
         usersRef.document(firebaseUser.uid).setData({
           'lastSeen': DateTime.now().toUtc()
         }, merge: true);
         userDocument = await usersRef.document(firebaseUser.uid).get();
       }
+      currentUser = User.fromDocument(userDocument);
       setState(() {
         isAuthenticated = true;
       });
