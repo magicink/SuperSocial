@@ -73,3 +73,4 @@
 /android/key.properties
 /ios/Flutter/flutter_export_environment.sh
 /.flutter-plugins-dependencies
+/ios/Flutter/Flutter.podspec
