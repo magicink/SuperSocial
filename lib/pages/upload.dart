@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image/image.dart' as Img;
@@ -77,6 +78,8 @@ class _UploadState extends State<Upload> {
     locationController.clear();
     setState(() {
       file = null;
+      busy = false;
+      uuid = Uuid().v4();
     });
   }
 
@@ -168,6 +171,13 @@ class _UploadState extends State<Upload> {
     });
   }
 
+  getLocation () async {
+    Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    List<Placemark> location = await Geolocator().placemarkFromCoordinates(position.latitude, position.longitude);
+    Placemark placemark = location[0];
+    locationController.text = "${placemark.locality}, ${placemark.country}";
+  }
+
   Scaffold buildUploadForm() {
     return Scaffold(
       appBar: AppBar(
@@ -241,7 +251,7 @@ class _UploadState extends State<Upload> {
           ),
           Container(
             child: RaisedButton.icon(
-                onPressed: null,
+                onPressed: getLocation,
                 icon: Icon(Icons.my_location),
                 label: Text(
                   'Use current location',
