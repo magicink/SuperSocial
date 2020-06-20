@@ -3,7 +3,8 @@ import 'package:SuperSocial/widgets/progress.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-final usersRef = Firestore.instance.collection('users');
+import 'home.dart';
+
 
 class Timeline extends StatefulWidget {
   @override
