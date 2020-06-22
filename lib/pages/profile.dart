@@ -1,4 +1,5 @@
 import 'package:SuperSocial/models/user.dart';
+import 'package:SuperSocial/pages/edit_profile.dart';
 import 'package:SuperSocial/widgets/header.dart';
 import 'package:SuperSocial/widgets/progress.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -30,8 +31,44 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  buildEditProfileButton () {
-    return Text('Edit profile');
+  editProfile () {
+    Navigator.push(context, MaterialPageRoute(
+      builder: (context) => EditProfile(userId: currentUser.uid,)
+    ));
+  }
+
+  followUser () {}
+
+  buildButton(context, {String label, Function onPressed}) {
+    return Container(
+      padding: EdgeInsets.only(top: 10.0),
+      child: FlatButton(
+        onPressed: onPressed,
+        child: Container(
+          alignment: Alignment.center,
+          width: 250.0,
+          decoration: BoxDecoration(
+              color: Theme.of(context).primaryColorDark,
+              borderRadius: BorderRadius.circular(5.0)
+          ),
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  buildEditProfileButton (context) {
+    if (widget.profileId == currentUser.uid) {
+      return buildButton(context, label: 'Edit profile', onPressed: editProfile);
+    }
+    return buildButton(context, label: 'Follow', onPressed: followUser);
   }
 
   buildProfileHeader () {
@@ -68,7 +105,7 @@ class _ProfileState extends State<Profile> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
-                            buildEditProfileButton()
+                            buildEditProfileButton(context)
                           ],
                         )
                       ],
