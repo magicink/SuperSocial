@@ -64,7 +64,8 @@ class _HomeState extends State<Home> {
           'displayName': firebaseUser.displayName,
           'creationDate': dateTimeUtc,
           'lastSeen': dateTimeUtc,
-          'username': username
+          'username': username,
+          'bio': ''
         });
         userDocument = await usersRef.document(firebaseUser.uid).get();
       } else {
@@ -134,7 +135,7 @@ class _HomeState extends State<Home> {
           ActivityFeed(),
           Upload(currentUser: currentUser,),
           Search(),
-          Profile()
+          Profile(profileId: currentUser?.uid,)
         ],
         controller: pageController,
         onPageChanged: handlePageChange,

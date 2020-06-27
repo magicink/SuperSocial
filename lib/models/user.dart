@@ -5,13 +5,15 @@ class User {
   final String email;
   final String photoUrl;
   final String username;
+  final String bio;
 
   User({
     this.uid,
     this.displayName,
     this.email,
     this.photoUrl,
-    this.username
+    this.username,
+    this.bio
   });
 
   factory User.fromDocument(DocumentSnapshot snapshot) {
@@ -20,7 +22,8 @@ class User {
       displayName: snapshot['displayName'],
       email: snapshot['email'],
       photoUrl: snapshot['photoUrl'],
-      username: snapshot['username']
+      username: snapshot['username'],
+      bio: snapshot['bio']
     );
   }
 }
