@@ -4,6 +4,7 @@ import 'package:SuperSocial/widgets/header.dart';
 import 'package:SuperSocial/widgets/progress.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'home.dart';
 
@@ -17,6 +18,22 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
+  bool busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    getUser();
+  }
+
+  Future<DocumentSnapshot> user;
+  getUser() {
+    setState(() {
+      busy = !busy;
+    });
+    user = usersRef.document(widget.profileId).get();
+  }
+
   buildCountColumn(String label, int count) {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -31,10 +48,11 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  editProfile () {
-    Navigator.push(context, MaterialPageRoute(
+  editProfile () async {
+    await Navigator.push(context, MaterialPageRoute(
       builder: (context) => EditProfile(userId: currentUser.uid,)
     ));
+    getUser();
   }
 
   followUser () {}
@@ -73,7 +91,7 @@ class _ProfileState extends State<Profile> {
 
   buildProfileHeader () {
     return FutureBuilder(
-      future: usersRef.document(widget.profileId).get(),
+      future: user,
       builder: (context, snapshot) {
         if (!snapshot.hasData) return circularProgress(context);
         User user = User.fromDocument(snapshot.data);
@@ -122,6 +140,11 @@ class _ProfileState extends State<Profile> {
                 padding: EdgeInsets.only(top: 4.0),
                 alignment: Alignment.centerLeft,
                 child: Text(user.displayName),
+              ),
+              Container(
+                padding: EdgeInsets.only(top: 4.0),
+                alignment: Alignment.centerLeft,
+                child: Text(user.bio),
               )
             ],
           ),
