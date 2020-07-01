@@ -27,11 +27,15 @@ class _ProfileState extends State<Profile> {
   }
 
   Future<DocumentSnapshot> user;
+
   getUser() {
     setState(() {
-      busy = !busy;
+      busy = true;
     });
     user = usersRef.document(widget.profileId).get();
+    setState(() {
+      busy = false;
+    });
   }
 
   buildCountColumn(String label, int count) {
