@@ -202,6 +202,6 @@ class _PostState extends State<Post> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    getUser();
+    getUser(); // Change
   }
 }
