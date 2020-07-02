@@ -1,11 +1,11 @@
+import 'package:SuperSocial/models/post.dart';
 import 'package:SuperSocial/models/user.dart';
 import 'package:SuperSocial/pages/edit_profile.dart';
 import 'package:SuperSocial/widgets/header.dart';
 import 'package:SuperSocial/widgets/progress.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:flutter/material.dart';
 import 'home.dart';
 
 class Profile extends StatefulWidget {
@@ -19,43 +19,21 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   bool busy = false;
-
-  @override
-  void initState() {
-    super.initState();
-    getUser();
-  }
+  int postCount = 0;
+  List<Post> posts = [];
 
   Future<DocumentSnapshot> user;
-  getUser() {
-    setState(() {
-      busy = !busy;
-    });
-    user = usersRef.document(widget.profileId).get();
-  }
+  Future<QuerySnapshot> userPosts;
 
-  buildCountColumn(String label, int count) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Text(count.toString(), style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold),),
-        Container(
-          margin: EdgeInsets.only(top: 4.0),
-          child: Text(label, style: TextStyle(fontSize: 12.0, fontWeight: FontWeight.w400),),
-        )
-      ],
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: header(context, title: 'Profile'),
+      body: ListView(
+        children: <Widget>[buildProfileHeader(), Divider(), buildProfilePosts()],
+      ),
     );
   }
-
-  editProfile () async {
-    await Navigator.push(context, MaterialPageRoute(
-      builder: (context) => EditProfile(userId: currentUser.uid,)
-    ));
-    getUser();
-  }
-
-  followUser () {}
 
   buildButton(context, {String label, Function onPressed}) {
     return Container(
@@ -67,35 +45,52 @@ class _ProfileState extends State<Profile> {
           width: 250.0,
           decoration: BoxDecoration(
               color: Theme.of(context).primaryColorDark,
-              borderRadius: BorderRadius.circular(5.0)
-          ),
+              borderRadius: BorderRadius.circular(5.0)),
           padding: EdgeInsets.all(16.0),
           child: Text(
             label,
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold
-            ),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         ),
       ),
     );
   }
 
-  buildEditProfileButton (context) {
+  buildCountColumn(String label, int count) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Text(
+          count.toString(),
+          style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold),
+        ),
+        Container(
+          margin: EdgeInsets.only(top: 4.0),
+          child: Text(
+            label,
+            style: TextStyle(fontSize: 12.0, fontWeight: FontWeight.w400),
+          ),
+        )
+      ],
+    );
+  }
+
+  buildEditProfileButton(context) {
     if (widget.profileId == currentUser.uid) {
-      return buildButton(context, label: 'Edit profile', onPressed: editProfile);
+      return buildButton(context,
+          label: 'Edit profile', onPressed: editProfile);
     }
     return buildButton(context, label: 'Follow', onPressed: followUser);
   }
 
-  buildProfileHeader () {
+  buildProfileHeader() {
     return FutureBuilder(
       future: user,
       builder: (context, snapshot) {
         if (!snapshot.hasData) return circularProgress(context);
         User user = User.fromDocument(snapshot.data);
-        return Padding (
+        return Padding(
           padding: EdgeInsets.all(16.0),
           child: Column(
             children: <Widget>[
@@ -104,9 +99,7 @@ class _ProfileState extends State<Profile> {
                   CircleAvatar(
                     radius: 40.0,
                     backgroundColor: Theme.of(context).primaryColorDark,
-                    backgroundImage: CachedNetworkImageProvider(
-                      user.photoUrl
-                    ),
+                    backgroundImage: CachedNetworkImageProvider(user.photoUrl),
                   ),
                   Expanded(
                     child: Column(
@@ -115,16 +108,14 @@ class _ProfileState extends State<Profile> {
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
-                            buildCountColumn('Posts', 0),
+                            buildCountColumn('Posts', postCount),
                             buildCountColumn('Followers', 0),
                             buildCountColumn('Following', 0),
                           ],
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            buildEditProfileButton(context)
-                          ],
+                          children: <Widget>[buildEditProfileButton(context)],
                         )
                       ],
                     ),
@@ -134,7 +125,10 @@ class _ProfileState extends State<Profile> {
               Container(
                 alignment: Alignment.centerLeft,
                 padding: EdgeInsets.only(top: 12.0),
-                child: Text(user.username, style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),),
+                child: Text(
+                  user.username,
+                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                ),
               ),
               Container(
                 padding: EdgeInsets.only(top: 4.0),
@@ -153,11 +147,67 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: header(context, title: 'Profile'),
-      body: widget.profileId != null ? buildProfileHeader() : null,
+  buildProfilePosts() {
+    return FutureBuilder(
+      future: userPosts,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return circularProgress(context);
+        return Column(
+          children: posts,
+        );
+      },
     );
+  }
+
+  editProfile() async {
+    await Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => EditProfile(
+                  userId: currentUser.uid,
+                )));
+    getUser();
+  }
+
+  followUser() {}
+
+  void getProfilePost() {
+    setState(() {
+      busy = true;
+    });
+    userPosts = userPostsRef
+        .document(widget.profileId)
+        .collection('posts')
+        .orderBy('timestamp', descending: true)
+        .getDocuments();
+    userPosts.then((results) {
+      setState(() {
+        postCount = results.documents.length;
+        posts = results.documents.map((document) {
+          return Post.fromDocument(document);
+        }).toList();
+        busy = false;
+      });
+      return null;
+    });
+  }
+
+  getUser() {
+    setState(() {
+      busy = true;
+    });
+    user = usersRef.document(widget.profileId).get();
+    user.then((result) {
+      setState(() {
+        busy = false;
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getUser();
+    getProfilePost();
   }
 }

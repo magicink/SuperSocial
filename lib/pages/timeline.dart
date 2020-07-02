@@ -5,32 +5,12 @@ import 'package:flutter/material.dart';
 
 import 'home.dart';
 
-
 class Timeline extends StatefulWidget {
   @override
   _TimelineState createState() => _TimelineState();
 }
 
 class _TimelineState extends State<Timeline> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-//  getAdminUsers () async {
-//    final QuerySnapshot admins = await usersRef
-//        .where('isAdmin', isEqualTo: true)
-//        .getDocuments();
-//  }
-//
-//  getUsers () async {
-//    final users = await usersRef.getDocuments();
-//  }
-//
-//  getUserById(String id) async {
-//    final user = await usersRef.document(id).get();
-//  }
-
   @override
   Widget build(context) {
     return Scaffold(
@@ -52,5 +32,24 @@ class _TimelineState extends State<Timeline> {
         },
       ),
     );
+  }
+
+//  getAdminUsers () async {
+//    final QuerySnapshot admins = await usersRef
+//        .where('isAdmin', isEqualTo: true)
+//        .getDocuments();
+//  }
+//
+//  getUsers () async {
+//    final users = await usersRef.getDocuments();
+//  }
+//
+//  getUserById(String id) async {
+//    final user = await usersRef.document(id).get();
+//  }
+
+  @override
+  void initState() {
+    super.initState();
   }
 }

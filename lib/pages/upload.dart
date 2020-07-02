@@ -67,7 +67,8 @@ class _UploadState extends State<Upload> {
       'userPhotoUrl': widget.currentUser.photoUrl,
       'caption': caption,
       'location': location,
-      'mediaUrl': mediaUrl
+      'mediaUrl': mediaUrl,
+      'timestamp': DateTime.now().toUtc()
     };
     userPostsRef
         .document(widget.currentUser.uid)

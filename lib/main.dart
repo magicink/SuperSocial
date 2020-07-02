@@ -9,16 +9,12 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp
-    ]);
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     return MaterialApp(
       title: 'SuperSocial',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        accentColor: Colors.teal[200],
-        primarySwatch: Colors.deepPurple
-      ),
+          accentColor: Colors.teal[200], primarySwatch: Colors.deepPurple),
       home: Home(),
     );
   }
