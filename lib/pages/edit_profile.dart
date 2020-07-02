@@ -24,12 +24,6 @@ class _EditProfileState extends State<EditProfile> {
   bool bioIsValid = true;
 
   @override
-  void initState() {
-    super.initState();
-    getUser();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
@@ -64,13 +58,12 @@ class _EditProfileState extends State<EditProfile> {
                         padding: EdgeInsets.all(16.0),
                         child: Column(
                           children: <Widget>[
-                            buildTextField(displayNameController,
-                                displayNameIsValid,
+                            buildTextField(
+                                displayNameController, displayNameIsValid,
                                 label: 'Display name',
                                 hint: 'Update display name',
                                 error: 'Display name is too short'),
-                            buildTextField(bioController,
-                                bioIsValid,
+                            buildTextField(bioController, bioIsValid,
                                 label: 'Bio',
                                 error: 'Bio can only be 100 characters')
                           ],
@@ -121,10 +114,36 @@ class _EditProfileState extends State<EditProfile> {
         ),
         TextField(
           controller: controller,
-          decoration: InputDecoration(hintText: hint, errorText: isValid ? null : error),
+          decoration: InputDecoration(
+              hintText: hint, errorText: isValid ? null : error),
         )
       ],
     );
+  }
+
+  getUser() async {
+    setState(() {
+      busy = true;
+    });
+    DocumentSnapshot snapshot = await usersRef.document(widget.userId).get();
+    user = User.fromDocument(snapshot);
+    displayNameController.text = user.displayName;
+    bioController.text = user.bio;
+    setState(() {
+      busy = false;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getUser();
+  }
+
+  void logout() async {
+    await googleSignIn.signOut();
+    await firebaseAuth.signOut();
+    Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
   }
 
   void updateProfile() {
@@ -142,24 +161,5 @@ class _EditProfileState extends State<EditProfile> {
       );
       scaffoldKey.currentState.showSnackBar(snackbar);
     }
-  }
-
-  void logout() async {
-    await googleSignIn.signOut();
-    await firebaseAuth.signOut();
-    Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
-  }
-
-  getUser() async {
-    setState(() {
-      busy = true;
-    });
-    DocumentSnapshot snapshot = await usersRef.document(widget.userId).get();
-    user = User.fromDocument(snapshot);
-    displayNameController.text = user.displayName;
-    bioController.text = user.bio;
-    setState(() {
-      busy = false;
-    });
   }
 }

@@ -13,6 +13,7 @@ class Post extends StatefulWidget {
   final String description;
   final String mediaUrl;
   final dynamic likes;
+  final Timestamp timestamp;
 
   Post(
       {this.id,
@@ -21,26 +22,19 @@ class Post extends StatefulWidget {
       this.location,
       this.description,
       this.mediaUrl,
-      this.likes});
+      this.likes,
+      this.timestamp});
 
   factory Post.fromDocument(DocumentSnapshot snapshot) {
     return Post(
-        id: snapshot['id'],
-        ownerId: snapshot['ownerId'],
-        ownerUsername: snapshot['ownerUsername'],
+        id: snapshot['uuid'],
+        ownerId: snapshot['userUid'],
+        ownerUsername: snapshot['username'],
         location: snapshot['location'],
-        description: snapshot['description'],
+        description: snapshot['caption'],
         mediaUrl: snapshot['mediaUrl'],
-        likes: snapshot['likes']);
-  }
-
-  int getLikeCount(likes) {
-    if (likes == null) return 0;
-    int count = 0;
-    likes.values.forEach((value) {
-      count++;
-    });
-    return count;
+        likes: snapshot['likes'],
+        timestamp: snapshot['timestamp']);
   }
 
   @override
@@ -52,7 +46,17 @@ class Post extends StatefulWidget {
       description: this.description,
       mediaUrl: this.mediaUrl,
       likes: this.likes,
-      likeCount: getLikeCount(this.likes));
+      likeCount: getLikeCount(this.likes),
+      timestamp: this.timestamp);
+
+  int getLikeCount(likes) {
+    if (likes == null) return 0;
+    int count = 0;
+    likes.values.forEach((value) {
+      count++;
+    });
+    return count;
+  }
 }
 
 class _PostState extends State<Post> {
@@ -64,7 +68,11 @@ class _PostState extends State<Post> {
   final String mediaUrl;
   final dynamic likes;
   final int likeCount;
+  final Timestamp timestamp;
 
+  bool busy = false;
+
+  Future<DocumentSnapshot> user;
   _PostState(
       {this.id,
       this.ownerId,
@@ -73,53 +81,13 @@ class _PostState extends State<Post> {
       this.description,
       this.mediaUrl,
       this.likes,
-      this.likeCount});
+      this.likeCount,
+      this.timestamp});
 
-  bool busy = false;
-  Future<DocumentSnapshot> user;
-
-  getUser() {
-    setState(() {
-      busy = true;
-    });
-    user = usersRef.document(ownerId).get();
-    setState(() {
-      busy = false;
-    });
-  }
-
-  Widget buildHeader() {
-    return FutureBuilder(
-      future: user,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) return circularProgress(context);
-        User userData = User.fromDocument(snapshot.data);
-        return ListTile(
-          leading: CircleAvatar(
-            backgroundImage: CachedNetworkImageProvider(userData.photoUrl),
-          ),
-          title: GestureDetector(
-            onTap: () => print('showing profile'),
-            child: Text(userData.username,
-                style: TextStyle(
-                    color: Colors.black, fontWeight: FontWeight.bold)),
-          ),
-          subtitle: Text(location),
-          trailing: IconButton(
-            onPressed: () => print('deleting post'),
-            icon: Icon(Icons.more_vert),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget buildImage() {
-    return GestureDetector(
-      onDoubleTap: () => print('liking post'),
-      child: Stack(
-        children: <Widget>[Image.network(mediaUrl)],
-      ),
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[buildHeader(), buildImage(), buildFooter()],
     );
   }
 
@@ -165,7 +133,7 @@ class _PostState extends State<Post> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Container(
-              margin: EdgeInsets.only(left: 20.0),
+              margin: EdgeInsets.only(left: 20.0, right: 20.0),
               child: Text(
                 "$ownerUsername",
                 style:
@@ -181,10 +149,59 @@ class _PostState extends State<Post> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[buildHeader(), buildImage(), buildFooter()],
+  Widget buildHeader() {
+    return FutureBuilder(
+      future: user,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return circularProgress(context);
+        User userData = User.fromDocument(snapshot.data);
+        return ListTile(
+          leading: CircleAvatar(
+            backgroundImage: CachedNetworkImageProvider(userData.photoUrl),
+          ),
+          title: GestureDetector(
+            onTap: () => print('showing profile'),
+            child: Text(userData.username,
+                style: TextStyle(
+                    color: Colors.black, fontWeight: FontWeight.bold)),
+          ),
+          subtitle: Text(location),
+          trailing: IconButton(
+            onPressed: () => print('deleting post'),
+            icon: Icon(Icons.more_vert),
+          ),
+        );
+      },
     );
+  }
+
+  Widget buildImage() {
+    return GestureDetector(
+      onDoubleTap: () => print('liking post'),
+      child: Stack(
+        children: <Widget>[Image.network(mediaUrl)],
+      ),
+    );
+  }
+
+  getUser() async {
+    setState(() {
+      busy = true;
+    });
+    user = usersRef.document(ownerId).get();
+    await user.then((result) {
+      setState(() {
+        busy = false;
+      });
+      print(result);
+      return;
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getUser();
   }
 }

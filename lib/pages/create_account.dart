@@ -1,6 +1,7 @@
+import 'dart:async';
+
 import 'package:SuperSocial/widgets/header.dart';
 import 'package:flutter/material.dart';
-import 'dart:async';
 
 class CreateAccount extends StatefulWidget {
   @override
@@ -12,26 +13,11 @@ class _CreateAccountState extends State<CreateAccount> {
   final formState = GlobalKey<FormState>();
   String username;
 
-  submit() {
-    if (formState.currentState.validate()) {
-      formState.currentState.save();
-      SnackBar snackBar = SnackBar(content: Text("Welcome $username"),);
-      scaffoldKey.currentState.showSnackBar(snackBar);
-      Timer(Duration(seconds: 2), () {
-        Navigator.pop(context, username);
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext parentContext) {
     return Scaffold(
       key: scaffoldKey,
-      appBar: header(
-          context,
-          removeBack: false,
-          title: 'Set up your profile'
-      ),
+      appBar: header(context, removeBack: false, title: 'Set up your profile'),
       body: ListView(
         children: <Widget>[
           Container(
@@ -55,10 +41,9 @@ class _CreateAccountState extends State<CreateAccount> {
                       },
                       onSaved: (val) => username = val,
                       decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: "Username",
-                        hintText: "Must be at least 3 characters"
-                      ),
+                          border: OutlineInputBorder(),
+                          labelText: "Username",
+                          hintText: "Must be at least 3 characters"),
                     ),
                   ),
                 ),
@@ -67,15 +52,12 @@ class _CreateAccountState extends State<CreateAccount> {
                   child: Container(
                     padding: EdgeInsets.all(16.0),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor,
-                      borderRadius: BorderRadius.circular(5.0)
-                    ),
+                        color: Theme.of(context).primaryColor,
+                        borderRadius: BorderRadius.circular(5.0)),
                     child: Text(
                       "Submit",
                       style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold
-                      ),
+                          color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                   ),
                 )
@@ -85,5 +67,18 @@ class _CreateAccountState extends State<CreateAccount> {
         ],
       ),
     );
+  }
+
+  submit() {
+    if (formState.currentState.validate()) {
+      formState.currentState.save();
+      SnackBar snackBar = SnackBar(
+        content: Text("Welcome $username"),
+      );
+      scaffoldKey.currentState.showSnackBar(snackBar);
+      Timer(Duration(seconds: 2), () {
+        Navigator.pop(context, username);
+      });
+    }
   }
 }
