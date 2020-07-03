@@ -1,17 +1,19 @@
 import 'package:SuperSocial/models/post.dart';
 import 'package:SuperSocial/models/user.dart';
 import 'package:SuperSocial/pages/edit_profile.dart';
+import 'package:SuperSocial/pages/home.dart';
 import 'package:SuperSocial/widgets/header.dart';
+import 'package:SuperSocial/widgets/post_tile.dart';
 import 'package:SuperSocial/widgets/progress.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'home.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class Profile extends StatefulWidget {
   final String profileId;
 
-  Profile({this.profileId});
+  Profile({Key key, this.profileId}): super(key: key);
 
   @override
   _ProfileState createState() => _ProfileState();
@@ -21,6 +23,7 @@ class _ProfileState extends State<Profile> {
   bool busy = false;
   int postCount = 0;
   List<Post> posts = [];
+  bool showPostGrid = true;
 
   Future<DocumentSnapshot> user;
   Future<QuerySnapshot> userPosts;
@@ -30,7 +33,15 @@ class _ProfileState extends State<Profile> {
     return Scaffold(
       appBar: header(context, title: 'Profile'),
       body: ListView(
-        children: <Widget>[buildProfileHeader(), Divider(), buildProfilePosts()],
+        children: <Widget>[
+          buildProfileHeader(),
+          Divider(),
+          buildPostOrientationToggle(),
+          Divider(
+            height: 0.0,
+          ),
+          buildProfilePosts()
+        ],
       ),
     );
   }
@@ -82,6 +93,28 @@ class _ProfileState extends State<Profile> {
           label: 'Edit profile', onPressed: editProfile);
     }
     return buildButton(context, label: 'Follow', onPressed: followUser);
+  }
+
+  buildPostOrientationToggle() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        IconButton(
+          onPressed: showPostGrid ? null : togglePostView,
+          icon: Icon(
+            Icons.grid_on,
+            color: showPostGrid ? Theme.of(context).primaryColor : Colors.grey,
+          ),
+        ),
+        IconButton(
+          onPressed: showPostGrid ? togglePostView : null,
+          icon: Icon(
+            Icons.list,
+            color: showPostGrid ? Colors.grey : Theme.of(context).primaryColor,
+          ),
+        )
+      ],
+    );
   }
 
   buildProfileHeader() {
@@ -147,14 +180,46 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  buildProfilePosts() {
+  Widget buildProfilePosts() {
     return FutureBuilder(
       future: userPosts,
       builder: (context, snapshot) {
         if (!snapshot.hasData) return circularProgress(context);
-        return Column(
-          children: posts,
-        );
+
+        if (posts.isEmpty) {
+          return Container(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                SvgPicture.asset('assets/images/no_content.svg', height: 260.0),
+                Padding(padding: EdgeInsets.only(top: 20.0),),
+                Text('No content', style: TextStyle(
+                  fontSize: 22.0
+                ),)
+              ],
+            ),
+          );
+        }
+
+        List<GridTile> gridTiles = [];
+        posts.forEach((post) {
+          gridTiles.add(GridTile(
+            child: PostTile(post: post),
+          ));
+        });
+        return showPostGrid
+            ? GridView.count(
+                crossAxisCount: 3,
+                childAspectRatio: 1,
+                mainAxisSpacing: 1.5,
+                crossAxisSpacing: 1.5,
+                physics: NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                children: gridTiles,
+              )
+            : Column(
+                children: posts,
+              );
       },
     );
   }
@@ -209,5 +274,11 @@ class _ProfileState extends State<Profile> {
     super.initState();
     getUser();
     getProfilePost();
+  }
+
+  togglePostView() {
+    setState(() {
+      showPostGrid = !showPostGrid;
+    });
   }
 }
