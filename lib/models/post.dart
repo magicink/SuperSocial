@@ -1,9 +1,18 @@
 import 'package:SuperSocial/models/user.dart';
+import 'package:SuperSocial/pages/comments.dart';
 import 'package:SuperSocial/pages/home.dart';
 import 'package:SuperSocial/widgets/progress.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+
+showComments(BuildContext context,
+    {String postId, String ownerId, String mediaUrl}) {
+  Navigator.push(context, MaterialPageRoute(builder: (context) {
+    return Comments(
+        postId: postId, postOwnerId: ownerId, postMediaUrl: mediaUrl);
+  }));
+}
 
 class Post extends StatefulWidget {
   final String id;
@@ -55,7 +64,7 @@ class Post extends StatefulWidget {
     if (likes == null) return 0;
     int count = 0;
     likes.values.forEach((value) {
-      count++;
+      if (value) count++;
     });
     return count;
   }
@@ -116,7 +125,8 @@ class _PostState extends State<Post> {
               padding: EdgeInsets.only(right: 20.0),
             ),
             GestureDetector(
-              onTap: () => print('showing comments'),
+              onTap: () => showComments(context,
+                  postId: id, ownerId: ownerId, mediaUrl: mediaUrl),
               child: Icon(
                 Icons.comment,
                 size: 28.0,

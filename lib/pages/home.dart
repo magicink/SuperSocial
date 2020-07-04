@@ -11,6 +11,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+final CollectionReference commentsRef =
+    Firestore.instance.collection('comments');
 User currentUser;
 final dateTimeUtc = DateTime.now().toUtc();
 final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
@@ -170,8 +172,7 @@ class _HomeState extends State<Home> {
         accessToken: googleAuthentication.accessToken,
         idToken: googleAuthentication.idToken,
       );
-      FirebaseUser firebaseUser =
-          await firebaseAuth.signInWithCredential(credential);
+      await firebaseAuth.signInWithCredential(credential);
     } else {
       setState(() {
         isAuthenticated = false;
