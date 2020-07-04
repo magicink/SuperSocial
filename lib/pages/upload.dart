@@ -178,6 +178,7 @@ class _UploadState extends State<Upload> {
       'username': widget.currentUser.username,
       'userPhotoUrl': widget.currentUser.photoUrl,
       'caption': caption,
+      'likes': {},
       'location': location,
       'mediaUrl': mediaUrl,
       'timestamp': DateTime.now().toUtc()
