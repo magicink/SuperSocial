@@ -16,14 +16,16 @@ class Post extends StatefulWidget {
   final Timestamp timestamp;
 
   Post(
-      {this.id,
+      {Key key,
+      this.id,
       this.ownerId,
       this.ownerUsername,
       this.location,
       this.description,
       this.mediaUrl,
       this.likes,
-      this.timestamp});
+      this.timestamp})
+      : super(key: key);
 
   factory Post.fromDocument(DocumentSnapshot snapshot) {
     return Post(
@@ -60,17 +62,19 @@ class Post extends StatefulWidget {
 }
 
 class _PostState extends State<Post> {
-  final String id;
-  final String ownerId;
-  final String ownerUsername;
-  final String location;
-  final String description;
-  final String mediaUrl;
-  final dynamic likes;
-  final int likeCount;
-  final Timestamp timestamp;
+  String currentUserId = currentUser?.uid;
+  String id;
+  String ownerId;
+  String ownerUsername;
+  String location;
+  String description;
+  String mediaUrl;
+  dynamic likes;
+  int likeCount;
+  Timestamp timestamp;
 
   bool busy = false;
+  bool isLiked = false;
 
   Future<DocumentSnapshot> user;
   _PostState(
@@ -101,9 +105,9 @@ class _PostState extends State<Post> {
               padding: EdgeInsets.only(top: 40.0, left: 30.0),
             ),
             GestureDetector(
-              onTap: () => print('liking post'),
+              onTap: toggleLike,
               child: Icon(
-                Icons.favorite_border,
+                isLiked ? Icons.favorite : Icons.favorite_border,
                 size: 28.0,
                 color: Colors.pink,
               ),
@@ -177,7 +181,7 @@ class _PostState extends State<Post> {
 
   Widget buildImage() {
     return GestureDetector(
-      onDoubleTap: () => print('liking post'),
+      onDoubleTap: toggleLike,
       child: Stack(
         children: <Widget>[Image.network(mediaUrl)],
       ),
@@ -203,5 +207,20 @@ class _PostState extends State<Post> {
     // TODO: implement initState
     super.initState();
     getUser(); // Change
+    isLiked = likes[currentUserId] == null ? false : likes[currentUserId];
+  }
+
+  void toggleLike() {
+    bool currentUserLiked = likes[currentUserId] == true;
+    userPostsRef
+        .document(ownerId)
+        .collection('posts')
+        .document(id)
+        .updateData({'likes.$currentUserId': !currentUserLiked});
+    setState(() {
+      likeCount += currentUserLiked ? -1 : 1;
+      likes[currentUserId] = !currentUserLiked;
+      isLiked = !currentUserLiked;
+    });
   }
 }
