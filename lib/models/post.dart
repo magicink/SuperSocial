@@ -105,7 +105,8 @@ class _PostState extends State<Post> {
       'username': currentUser.username,
       'userPhotoUrl': currentUser.photoUrl,
       'postId': id,
-      'postMediaUrl': mediaUrl
+      'postMediaUrl': mediaUrl,
+      'content': ''
     });
   }
 
@@ -236,7 +237,8 @@ class _PostState extends State<Post> {
     var query = feedRef
         .document(ownerId)
         .collection('items')
-        .where('userId', isEqualTo: currentUser.uid);
+        .where('userId', isEqualTo: currentUser.uid)
+        .where('type', isEqualTo: 'like');
     var documents = query.getDocuments();
     documents.then((docs) {
       docs.documents.forEach((element) {
