@@ -97,6 +97,18 @@ class _PostState extends State<Post> {
       this.likeCount,
       this.timestamp});
 
+  void addFeedItem() {
+    feedRef.document(ownerId).collection('items').document(id).setData({
+      'timestamp': DateTime.now().toUtc(),
+      'type': 'like',
+      'userId': currentUser.uid,
+      'username': currentUser.username,
+      'userPhotoUrl': currentUser.photoUrl,
+      'postId': id,
+      'postMediaUrl': mediaUrl
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -220,6 +232,21 @@ class _PostState extends State<Post> {
     isLiked = likes[currentUserId] == null ? false : likes[currentUserId];
   }
 
+  void removeFeedItem() {
+    var query = feedRef
+        .document(ownerId)
+        .collection('items')
+        .where('userId', isEqualTo: currentUser.uid);
+    var documents = query.getDocuments();
+    documents.then((docs) {
+      docs.documents.forEach((element) {
+        if (element.exists) {
+          element.reference.delete();
+        }
+      });
+    });
+  }
+
   void toggleLike() {
     bool currentUserLiked = likes[currentUserId] == true;
     userPostsRef
@@ -227,6 +254,11 @@ class _PostState extends State<Post> {
         .collection('posts')
         .document(id)
         .updateData({'likes.$currentUserId': !currentUserLiked});
+    if (!currentUserLiked) {
+      addFeedItem();
+    } else {
+      removeFeedItem();
+    }
     setState(() {
       likeCount += currentUserLiked ? -1 : 1;
       likes[currentUserId] = !currentUserLiked;
