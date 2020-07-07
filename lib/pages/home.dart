@@ -15,6 +15,7 @@ final CollectionReference commentsRef =
     Firestore.instance.collection('comments');
 User currentUser;
 final dateTimeUtc = DateTime.now().toUtc();
+final CollectionReference feedRef = Firestore.instance.collection('feed');
 final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
 final GoogleSignIn googleSignIn = GoogleSignIn();
 final StorageReference storageReference = FirebaseStorage.instance.ref();
