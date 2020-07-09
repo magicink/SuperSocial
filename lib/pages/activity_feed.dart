@@ -1,3 +1,7 @@
+import 'package:SuperSocial/models/FeedItem.dart';
+import 'package:SuperSocial/pages/home.dart';
+import 'package:SuperSocial/widgets/header.dart';
+import 'package:SuperSocial/widgets/progress.dart';
 import 'package:flutter/material.dart';
 
 class ActivityFeed extends StatefulWidget {
@@ -8,13 +12,33 @@ class ActivityFeed extends StatefulWidget {
 class _ActivityFeedState extends State<ActivityFeed> {
   @override
   Widget build(BuildContext context) {
-    return Text('Activity Feed');
+    return Scaffold(
+      appBar: header(context, title: 'Activity Feed'),
+      body: Container(
+        child: FutureBuilder(
+          future: getActivityFeed(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) return circularProgress(context);
+            return ListView(
+              children: snapshot.data,
+            );
+          },
+        ),
+      ),
+    );
   }
-}
 
-class ActivityFeedItem extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Text('Activity Feed Item');
+  getActivityFeed() async {
+    var snapshot = await feedRef
+        .document(currentUser.uid)
+        .collection('items')
+        .orderBy('timestamp', descending: true)
+        .limit(20)
+        .getDocuments();
+    List<FeedItem> feedItems = [];
+    snapshot.documents.forEach((doc) {
+      feedItems.add(FeedItem.fromDocument(doc));
+    });
+    return feedItems;
   }
 }

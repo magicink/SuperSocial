@@ -1,7 +1,9 @@
+import 'package:SuperSocial/models/MediaPreview.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class FeedItem extends StatefulWidget {
+class FeedItem extends StatelessWidget {
   final String userId;
   final String username;
   final String userPhotoUrl;
@@ -36,13 +38,85 @@ class FeedItem extends StatefulWidget {
     );
   }
 
-  @override
-  _FeedItemState createState() => _FeedItemState();
-}
+  MediaPreview buildMediaPreview () {
+    Widget mediaPreview;
+    String activityText;
+    if (type == 'like' || type == 'comment') {
+      mediaPreview = GestureDetector(
+        onTap: () => print('tapped'),
+        child: Container(
+          height: 50.0,
+          width:50.0,
+          child: AspectRatio(
+            aspectRatio: 16/9,
+            child: Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  fit: BoxFit.cover,
+                  image: CachedNetworkImageProvider(postMediaUrl)
+                )
+              ),
+            ),
+          ),
+        ),
+      );
+    } else {
+      mediaPreview = Text('');
+    }
 
-class _FeedItemState extends State<FeedItem> {
+    switch(type) {
+      case 'like': {
+        activityText = ' liked your post.';
+      }
+      break;
+      case 'follow': {
+        activityText = ' is following you.';
+      }
+      break;
+      case 'comment': {
+        activityText = ' commented on your post: $content';
+      }
+      break;
+      default: {
+        activityText = ' posted an unknown type: "$type"';
+      }
+    }
+
+    return new MediaPreview(mediaPreview, activityText);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container();
+    MediaPreview mediaPreview = buildMediaPreview();
+    return Padding(
+      padding: EdgeInsets.only(bottom: 2.0),
+      child: Container(
+        color: Colors.white60,
+        child: ListTile(
+          title: GestureDetector(
+            onTap: () => print('show profile'),
+            child: RichText(
+              overflow: TextOverflow.ellipsis,
+              text: TextSpan(
+                style: TextStyle(
+                  fontSize: 14.0,
+                  color: Colors.black
+                ),
+                children: [
+                  TextSpan(text: username, style: TextStyle(
+                    fontWeight: FontWeight.bold
+                  )),
+                  TextSpan(text: mediaPreview.getText())
+                ]
+              ),
+            ),
+          ),
+          leading: CircleAvatar(
+            backgroundImage: CachedNetworkImageProvider(userPhotoUrl),
+          ),
+          trailing: mediaPreview.getWidget(),
+        ),
+      ),
+    );
   }
 }
