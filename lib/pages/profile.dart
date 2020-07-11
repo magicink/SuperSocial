@@ -13,21 +13,26 @@ import 'package:flutter_svg/flutter_svg.dart';
 class Profile extends StatefulWidget {
   final String profileId;
 
-  Profile({Key key, this.profileId}): super(key: key);
+  Profile({Key key, this.profileId}) : super(key: key);
 
   @override
   _ProfileState createState() => _ProfileState();
 
-  static showProfile (context, { String profileId }) {
+  static showProfile(context, {String profileId}) {
     Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return Profile(profileId: profileId,);
+      return Profile(
+        profileId: profileId,
+      );
     }));
   }
 }
 
 class _ProfileState extends State<Profile> {
+  bool isFollowing = false;
   bool busy = false;
   int postCount = 0;
+  int followerCount = 0;
+  int followingCount = 0;
   List<Post> posts = [];
   bool showPostGrid = true;
 
@@ -98,7 +103,9 @@ class _ProfileState extends State<Profile> {
       return buildButton(context,
           label: 'Edit profile', onPressed: editProfile);
     }
-    return buildButton(context, label: 'Follow', onPressed: followUser);
+    return buildButton(context,
+        label: !isFollowing ? 'Follow' : 'Unfollow',
+        onPressed: toggleFollowUser);
   }
 
   buildPostOrientationToggle() {
@@ -148,8 +155,8 @@ class _ProfileState extends State<Profile> {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
                             buildCountColumn('Posts', postCount),
-                            buildCountColumn('Followers', 0),
-                            buildCountColumn('Following', 0),
+                            buildCountColumn('Followers', followerCount),
+                            buildCountColumn('Following', followingCount),
                           ],
                         ),
                         Row(
@@ -198,10 +205,13 @@ class _ProfileState extends State<Profile> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 SvgPicture.asset('assets/images/no_content.svg', height: 260.0),
-                Padding(padding: EdgeInsets.only(top: 20.0),),
-                Text('No content', style: TextStyle(
-                  fontSize: 22.0
-                ),)
+                Padding(
+                  padding: EdgeInsets.only(top: 20.0),
+                ),
+                Text(
+                  'No content',
+                  style: TextStyle(fontSize: 22.0),
+                )
               ],
             ),
           );
@@ -240,8 +250,6 @@ class _ProfileState extends State<Profile> {
     getUser();
   }
 
-  followUser() {}
-
   void getProfilePost() {
     setState(() {
       busy = true;
@@ -278,8 +286,93 @@ class _ProfileState extends State<Profile> {
   @override
   void initState() {
     super.initState();
+
     getUser();
+    setFollowState();
     getProfilePost();
+  }
+
+  void setFollowState() async {
+    var followers =
+        followersRef.document(widget.profileId).collection('followers');
+    var following = followingRef.document(widget.profileId).collection('users');
+    await followers
+        .where('userId', isEqualTo: currentUser?.uid)
+        .getDocuments()
+        .then((value) {
+      value.documents.forEach((element) {
+        if (element.exists) {
+          setState(() {
+            isFollowing = true;
+          });
+        }
+      });
+    });
+    await followers.getDocuments().then((value) {
+      setState(() {
+        followerCount = value.documents.length;
+      });
+    });
+    await following.getDocuments().then((value) {
+      setState(() {
+        followingCount = value.documents.length;
+      });
+    });
+  }
+
+  toggleFollowUser() {
+    var feed = feedRef.document(widget.profileId).collection('items');
+    var followers =
+        followersRef.document(widget.profileId).collection('followers');
+    var following = followingRef.document(currentUser?.uid).collection('users');
+    var now = DateTime.now().toUtc();
+    if (!isFollowing) {
+      followers.add({
+        'userId': currentUser?.uid,
+        'username': currentUser?.username,
+        'photoUrl': currentUser?.photoUrl,
+        'timestamp': now
+      });
+      feed.add({
+        'timestamp': now,
+        'userId': currentUser?.uid,
+        'username': currentUser?.username,
+        'userPhotoUrl': currentUser?.photoUrl,
+        'type': 'follow'
+      });
+      following.document(widget.profileId).setData({'timestamp': now});
+    } else {
+      followers
+          .where('userId', isEqualTo: currentUser.uid)
+          .getDocuments()
+          .then((value) {
+        value.documents.forEach((document) {
+          if (document.exists) {
+            document.reference.delete();
+          }
+        });
+      });
+      feed
+          .where('userId', isEqualTo: currentUser.uid)
+          .where('type', isEqualTo: 'follow')
+          .getDocuments()
+          .then((value) {
+        value.documents.forEach((document) {
+          if (document.exists) {
+            document.reference.delete();
+          }
+        });
+      });
+      following.document(widget.profileId).get().then((value) {
+        if (value.exists) {
+          value.reference.delete();
+        }
+      });
+    }
+    setState(() {
+      followerCount += isFollowing ? -1 : 1;
+      isFollowing = !isFollowing;
+    });
   }
 
   togglePostView() {

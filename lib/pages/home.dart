@@ -17,6 +17,10 @@ User currentUser;
 final dateTimeUtc = DateTime.now().toUtc();
 final CollectionReference feedRef = Firestore.instance.collection('feed');
 final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+final CollectionReference followersRef =
+    Firestore.instance.collection('followers');
+final CollectionReference followingRef =
+    Firestore.instance.collection('following');
 final GoogleSignIn googleSignIn = GoogleSignIn();
 final StorageReference storageReference = FirebaseStorage.instance.ref();
 final CollectionReference userPostsRef =
