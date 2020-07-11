@@ -5,6 +5,7 @@ import 'package:SuperSocial/widgets/progress.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:SuperSocial/pages/profile.dart';
 
 showComments(BuildContext context,
     {String postId, String ownerId, String mediaUrl}) {
@@ -97,6 +98,19 @@ class _PostState extends State<Post> {
       this.likeCount,
       this.timestamp});
 
+  void addFeedItem() {
+    feedRef.document(ownerId).collection('items').document(id).setData({
+      'timestamp': DateTime.now().toUtc(),
+      'type': 'like',
+      'userId': currentUser.uid,
+      'username': currentUser.username,
+      'userPhotoUrl': currentUser.photoUrl,
+      'postId': id,
+      'postMediaUrl': mediaUrl,
+      'content': ''
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -174,7 +188,7 @@ class _PostState extends State<Post> {
             backgroundImage: CachedNetworkImageProvider(userData.photoUrl),
           ),
           title: GestureDetector(
-            onTap: () => print('showing profile'),
+            onTap: () => Profile.showProfile(context, profileId: userData.uid),
             child: Text(userData.username,
                 style: TextStyle(
                     color: Colors.black, fontWeight: FontWeight.bold)),
@@ -220,6 +234,22 @@ class _PostState extends State<Post> {
     isLiked = likes[currentUserId] == null ? false : likes[currentUserId];
   }
 
+  void removeFeedItem() {
+    var query = feedRef
+        .document(ownerId)
+        .collection('items')
+        .where('userId', isEqualTo: currentUser.uid)
+        .where('type', isEqualTo: 'like');
+    var documents = query.getDocuments();
+    documents.then((docs) {
+      docs.documents.forEach((element) {
+        if (element.exists) {
+          element.reference.delete();
+        }
+      });
+    });
+  }
+
   void toggleLike() {
     bool currentUserLiked = likes[currentUserId] == true;
     userPostsRef
@@ -227,6 +257,11 @@ class _PostState extends State<Post> {
         .collection('posts')
         .document(id)
         .updateData({'likes.$currentUserId': !currentUserLiked});
+    if (!currentUserLiked) {
+      addFeedItem();
+    } else {
+      removeFeedItem();
+    }
     setState(() {
       likeCount += currentUserLiked ? -1 : 1;
       likes[currentUserId] = !currentUserLiked;

@@ -17,6 +17,12 @@ class Profile extends StatefulWidget {
 
   @override
   _ProfileState createState() => _ProfileState();
+
+  static showProfile (context, { String profileId }) {
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return Profile(profileId: profileId,);
+    }));
+  }
 }
 
 class _ProfileState extends State<Profile> {
