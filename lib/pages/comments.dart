@@ -1,4 +1,4 @@
-import 'package:SuperSocial/models/Comment.dart';
+import 'package:SuperSocial/models/comment.dart';
 import 'package:SuperSocial/pages/home.dart';
 import 'package:SuperSocial/widgets/header.dart';
 import 'package:SuperSocial/widgets/progress.dart';

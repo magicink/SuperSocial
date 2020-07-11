@@ -5,6 +5,7 @@ import 'package:SuperSocial/widgets/progress.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:SuperSocial/pages/profile.dart';
 
 showComments(BuildContext context,
     {String postId, String ownerId, String mediaUrl}) {
@@ -187,7 +188,7 @@ class _PostState extends State<Post> {
             backgroundImage: CachedNetworkImageProvider(userData.photoUrl),
           ),
           title: GestureDetector(
-            onTap: () => print('showing profile'),
+            onTap: () => Profile.showProfile(context, profileId: userData.uid),
             child: Text(userData.username,
                 style: TextStyle(
                     color: Colors.black, fontWeight: FontWeight.bold)),
