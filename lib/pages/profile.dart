@@ -275,11 +275,14 @@ class _ProfileState extends State<Profile> {
     setState(() {
       busy = true;
     });
-    user = usersRef.document(widget.profileId).get();
-    user.then((result) {
-      setState(() {
-        busy = false;
-      });
+    user = usersRef.document(widget.profileId).get().then((result) {
+      if (result.exists) {
+        setState(() {
+          busy = false;
+        });
+        return result;
+      }
+      return null;
     });
   }
 
