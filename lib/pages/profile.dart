@@ -330,7 +330,7 @@ class _ProfileState extends State<Profile> {
     var following = followingRef.document(currentUser?.uid).collection('users');
     var now = DateTime.now().toUtc();
     if (!isFollowing) {
-      followers.add({
+      followers.document(currentUser?.uid).setData({
         'userId': currentUser?.uid,
         'username': currentUser?.username,
         'photoUrl': currentUser?.photoUrl,
