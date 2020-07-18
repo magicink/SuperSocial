@@ -1,4 +1,5 @@
 import 'package:SuperSocial/models/media_preview.dart';
+import 'package:SuperSocial/pages/home.dart';
 import 'package:SuperSocial/pages/post_screen.dart';
 import 'package:SuperSocial/pages/profile.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -124,7 +125,7 @@ class FeedItem extends StatelessWidget {
     Navigator.push(context, MaterialPageRoute(builder: (context) {
       return PostScreen(
         postId: postId,
-        userId: userId,
+        userId: currentUser?.uid,
       );
     }));
   }

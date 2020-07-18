@@ -195,7 +195,7 @@ class _PostState extends State<Post> {
           ),
           subtitle: Text(location),
           trailing: IconButton(
-            onPressed: () => print('deleting post'),
+            onPressed: () => handleDeletePost(context),
             icon: Icon(Icons.more_vert),
           ),
         );
@@ -266,6 +266,18 @@ class _PostState extends State<Post> {
       likeCount += currentUserLiked ? -1 : 1;
       likes[currentUserId] = !currentUserLiked;
       isLiked = !currentUserLiked;
+    });
+  }
+
+  handleDeletePost(BuildContext parentContext) {
+    return showDialog(context: parentContext, builder: (context) {
+      return SimpleDialog(
+        title: Text('Remove this post?'),
+        children: <Widget>[
+          SimpleDialogOption(child: Text('Delete'),),
+          SimpleDialogOption(child: Text('Cancel'), onPressed: () => Navigator.pop(context),)
+        ],
+      );
     });
   }
 }
