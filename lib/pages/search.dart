@@ -1,5 +1,6 @@
 import 'package:SuperSocial/models/user.dart';
 import 'package:SuperSocial/pages/home.dart';
+import 'package:SuperSocial/pages/profile.dart';
 import 'package:SuperSocial/widgets/progress.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -23,7 +24,7 @@ class UserResult extends StatelessWidget {
       child: Column(
         children: <Widget>[
           GestureDetector(
-            onTap: () => print('tapped'),
+            onTap: () => Profile.showProfile(context, profileId: this.user.uid),
             child: ListTile(
               contentPadding: EdgeInsets.all(5.0),
               leading: CircleAvatar(
@@ -143,6 +144,7 @@ class _SearchState extends State<Search> {
   handleSearch(query) {
     Future<QuerySnapshot> result = usersRef
         .where('username', isGreaterThanOrEqualTo: query)
+        .orderBy('username', descending: true)
         .getDocuments();
     setState(() {
       searchResultsFuture = result;
